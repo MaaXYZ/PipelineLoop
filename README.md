@@ -1,12 +1,12 @@
-# PipelineLoop
+# PipelineExt
 
 ## 功能简介
 
-通过新增 attach 字段的方式，为 MaaFramework Pipeline 提供循环功能
+通过新增 attach 字段的方式，为 MaaFramework Pipeline 提供非线性扩展逻辑。
 
 ## 字段详情
 
-### `PipelineLoop.loop`
+### `PipelineExt.loop`
 
 **int** 类型
 
@@ -23,7 +23,7 @@
         "recognition": "OCR",
         "action": "Click",
         "attach": {
-            "PipelineLoop.loop": 3
+            "PipelineExt.loop": 3
         },
         "next": "B",
     },
@@ -34,7 +34,7 @@
 
 流水线为：`A` -> 识别 `LoopNode`.`OCR` -> 执行 `LoopNode`.`Click` -> 执行 `LoopNode`.`Click` -> 执行 `LoopNode`.`Click` -> 识别 `B`
 
-### `PipelineLoop.max_hit`
+### `PipelineExt.max_hit`
 
 **int** 类型
 
@@ -49,7 +49,7 @@
     },
     "LoopNode": {
         "attach": {
-            "PipelineLoop.max_hit": 3,
+            "PipelineExt.max_hit": 3,
         },
         "next": "B",
     },
@@ -63,6 +63,76 @@
 ```
 
 流水线为：`A` -> `LoopNode`(1) -> `B` -> `C` -> `LoopNode`(2) -> `B` -> `C` -> `LoopNode`(3) -> `B` -> `C` -> (`LoopNode` 已超限，直接视为识别失败) -> `D`
+
+### `PipelineExt.goto` + `PipelineExt.label`
+
+**string** 或 **list<string,>** 类型
+
+在前序节点中添加 label，后序 goto 节点将会在动作执行完成后，使用 goto list 替换 next list 进行后续流程。
+
+请留意，仅已执行的前序节点的 label 才会生效，并且会覆盖之前相同的 label。即 goto 会跳转到最近一次的同名 label 中。
+
+#### 举例 1
+
+```jsonc
+{
+    "Entry": {
+        "attach": {
+            "PipelineExt.label": "哦在这停顿",
+        },
+        "next": "B"
+    },
+    "Entry_2": {
+        "attach": {
+            "PipelineExt.label": "哦在这停顿",
+        },
+        "next": "B"
+    },
+    "B": {
+        "next": "C"
+    },
+    "C": {
+        "attach": {
+            "PipelineExt.goto": "哦在这停顿",
+        },
+    },
+}
+```
+
+可用于实现 `B`, `C` 节点的复用，流水线为：
+
+- `Entry` -> `B` -> `C` -> `Entry` -> ...
+- `Entry_2` -> `B` -> `C` -> `Entry_2` -> ...
+
+#### 举例 2
+
+若 label 为数组，即代表其可作为多个标记。
+
+goto 逻辑与 next 相同，若为数组则会依次进行识别。若其中出现未曾执行过的 label，则认为该 label 识别失败
+
+```jsonc
+{
+    "A": {
+        "attach": {
+            "PipelineExt.label": [ "标记111", "标记222" ],
+        },
+        "next": "B"
+    },
+    "B": {
+        "attach": {
+            "PipelineExt.label": "标记333",
+        },
+        "next": "C"
+    },
+    "C": {
+        "attach": {
+            "PipelineExt.goto": [ "标记333", "标记111" ],
+        },
+    },
+}
+```
+
+流水线为: `A` -> `B` -> `C` -> `C`.`next` = [ `B`, `A` ]
 
 ## 本地调试
 
@@ -78,7 +148,7 @@
   - name: Download Plugin
     uses: robinraju/release-downloader@v1
     with:
-      repository: MaaXYZ/PipelineLoop
+      repository: MaaXYZ/PipelineExt
       latest: true
       fileName: "*${{ matrix.os }}-${{ matrix.arch }}*"
       out-file-path: "deps/download_plugins"

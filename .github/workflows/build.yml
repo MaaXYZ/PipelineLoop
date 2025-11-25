@@ -48,9 +48,9 @@ jobs:
               run: |
                   dir d:\a
                   cd ..
-                  mkdir C:\PipelineLoop
-                  rmdir PipelineLoop
-                  mklink /j PipelineLoop C:\PipelineLoop
+                  mkdir C:\PipelineExt
+                  rmdir PipelineExt
+                  mklink /j PipelineExt C:\PipelineExt
                   dism /Online /Disable-Feature /FeatureName:Windows-Defender /Remove /NoRestart /Quiet
                   cd .
 
@@ -114,7 +114,7 @@ jobs:
             - uses: actions/upload-artifact@v4
               if: always()
               with:
-                  name: PipelineLoop-win-${{ matrix.arch }}
+                  name: PipelineExt-win-${{ matrix.arch }}
                   path: 'install'
 
     ubuntu:
@@ -182,7 +182,7 @@ jobs:
             - uses: actions/upload-artifact@v4
               if: always()
               with:
-                  name: PipelineLoop-linux-${{ matrix.arch }}
+                  name: PipelineExt-linux-${{ matrix.arch }}
                   path: 'install'
 
     macos:
@@ -249,7 +249,7 @@ jobs:
             - uses: actions/upload-artifact@v4
               if: always()
               with:
-                  name: PipelineLoop-macos-${{ matrix.arch }}
+                  name: PipelineExt-macos-${{ matrix.arch }}
                   path: 'install'
 
     android:
@@ -321,7 +321,7 @@ jobs:
             - uses: actions/upload-artifact@v4
               if: always()
               with:
-                  name: PipelineLoop-android-${{ matrix.arch }}
+                  name: PipelineExt-android-${{ matrix.arch }}
                   path: 'install'
 
     release:
