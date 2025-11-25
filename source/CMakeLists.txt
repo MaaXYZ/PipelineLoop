@@ -1,1 +1,1 @@
-add_subdirectory(MaaPluginDemo)
+add_subdirectory(PipelineLoop)
