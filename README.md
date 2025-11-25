@@ -6,7 +6,63 @@
 
 ## 字段详情
 
-TODO...
+### `PipelineLoop.loop`
+
+**int** 类型
+
+节点自身动作循环次数。
+
+举例：
+
+```jsonc
+{
+    "A": {
+        "next": "LoopNode",
+    },
+    "LoopNode": {
+        "recognition": "OCR",
+        "action": "Click",
+        "attach": {
+            "PipelineLoop.loop": 3
+        },
+        "next": "B",
+    },
+    "B": {
+    }
+}
+```
+
+流水线为：`A` -> 识别 `LoopNode`.`OCR` -> 执行 `LoopNode`.`Click` -> 执行 `LoopNode`.`Click` -> 执行 `LoopNode`.`Click` -> 识别 `B`
+
+### `PipelineLoop.max_hit`
+
+**int** 类型
+
+节点最大识别命中次数，超过视为识别失败。仅在单个 task 中生效，新 task 将重置次数。
+
+举例：
+
+```jsonc
+{
+    "A": {
+        "next": "LoopNode",
+    },
+    "LoopNode": {
+        "attach": {
+            "PipelineLoop.max_hit": 3,
+        },
+        "next": "B",
+    },
+    "B": {
+        "next": "C"
+    },
+    "C": {
+        "next": ["LoopNode", "D"]
+    }
+}
+```
+
+流水线为：`A` -> `LoopNode`(1) -> `B` -> `C` -> `LoopNode`(2) -> `B` -> `C` -> `LoopNode`(3) -> `B` -> `C` -> (`LoopNode` 已超限，直接视为识别失败) -> `D`
 
 ## 本地调试
 
